@@ -1,16 +1,13 @@
 /**
 The script below supports NAMS's student office referral workflow.
 Teachers fill out a Google Form (https://docs.google.com/forms/d/e/1FAIpQLSdJP_N1O8fwcrSAKqCscIkPzMZf_AaNe2Hiod0U-0deVMgN7g/viewform)
-when they want to create an offense report. The submission of the Google Form populates in the 2023-2024 NAMS Student Offense Report (Responses)
-sheet that is monitored by the NAMS administration. Administration will process the student offense report and provide information
-in the sheet. Administration will then indicate that they are ready to send an email to the teacher who filled out the form with
-the action they took and the consequences that the student received.
+when they want to create an offense report. The submission of the Google Form populates in the 2024-2025 NAMS Student Offense Report (Responses) sheet that is monitored by the NAMS administration. Administration will process the student offense report and provide information in the sheet. Administration will then indicate that they are ready to send an email to the teacher who filled out the form with the action they took and the consequences that the student received.
 
 Reference: https://spreadsheet.dev/working-with-checkboxes-in-google-sheets-using-google-apps-script
 https://github.com/lsvekis/Google-Apps-Script/blob/main/Apps%20Script%20Emailer/Apps%20Script%20Code
 
 Point of contact: Alvaro Gomez (Special Campuses Academic Technology Coach, 210-363-1577)
-Latest Update: 11/30/23
+Latest Update: 07/25/24
 */
 
 var rows = SpreadsheetApp.getActiveSheet().getDataRange().getValues();
@@ -24,6 +21,9 @@ function wrapText() {
   stuInfraction.setWrap(true);
 }
 
+/* Adds a user interface to the spreadsheet that gives the administrator
+the option to send emails to the teachers. When the checkbox is checked,
+it will run the processSelectedRows function. */
 function onOpen() {
     const ui = SpreadsheetApp.getUi();
     ui.createMenu("Teacher Followup Emails")
@@ -38,10 +38,11 @@ function onOpen() {
     });
 }
 
-/*Checks whether Column Q is checked and also if there's a date in Column R.
+/* Checks whether a row from Column Q is checked and also if there's a date in Column R.
 If checked and no date, then it returns the data's row and creates
-the const "User" with the email data.*/
-
+the const "User" with the email data.
+If checked and has a date, then it skips the row.
+If not checked and no date, then it skips the row. */
 function processSelectedRows() {
   try{
     rows.forEach(function (row, i) {
@@ -60,12 +61,21 @@ function processSelectedRows() {
         };
 
         const teacherEmailList = {
+          "Aguilar, R": {
+            Email: "russell.aguilar@nisd.net",
+            Salutation: "Mr. "
+
+          },
           Atoui: {
               Email: "atlanta.atoui@nisd.net",
               Salutation: "Mrs."
           },
           Bowery: {
               Email: "melissa.bowery@nisd.net",
+              Salutation: "Mrs. "
+          },
+          "Cantu, S": {
+              Email: "sandy.cantu@nisd.net",
               Salutation: "Mrs. "
           },
           Casanova: {
@@ -76,6 +86,10 @@ function processSelectedRows() {
               Email: "deborah.coyle@nisd.net",
               Salutation: "Mrs. "
           },
+          "De Leon, U": {
+              Email: "ulices.deleon@nisd.net",
+              Salutation: "Mr. "
+          },
           Decker: {
               Email: "john.decker@nisd.net",
               Salutation: "Mr. "
@@ -83,10 +97,6 @@ function processSelectedRows() {
           "Deleon, R": {
               Email: "rebeca.deleon@nisd.net",
               Salutation: "Mrs. "
-          },
-          "Deleon, U": {
-              Email: "ulices.deleon@nisd.net",
-              Salutation: "Mr. "
           },
           Farias: {
               Email: "michelle.farias@nisd.net",
@@ -100,15 +110,15 @@ function processSelectedRows() {
               Email: "danny.garcia@nisd.net",
               Salutation: "Mr. "
           },
-          Gaskins: {
-              Email: "jackie.gaskins@nisd.net",
-              Salutation: "Mrs. "
+          Goff: {
+              Email: "steven.goff@nisd.net",
+              Salutation: "Mr. "
           },
           Gomez:{
               Email: "alvaro.gomez@nisd.net",
               Salutation: "Mr."
           },
-          "Gonzalez, Z": {
+          Gonzales: {
               Email: "zina.gonzales@nisd.net",
               Salutation: "Dr."
           },
@@ -128,10 +138,6 @@ function processSelectedRows() {
               Email: "nadia.jasso@nisd.net",
               Salutation: "Mrs. "
           },
-          "Kichura, K": {
-              Email: "kenneth.kichura@nisd.net",
-              Salutation: "Mr. "
-          },
           Marquez: {
               Email: "monica.marquez@nisd.net",
               Salutation: "Mrs. "
@@ -144,10 +150,6 @@ function processSelectedRows() {
               Email: "israel.ramon@nisd.net",
               Salutation: "Mr. "
           },
-          Schneider: {
-              Email: "jaclyn.schneider@nisd.net",
-              Salutation: "Mrs. "
-          },
           Tellez: {
               Email: "lisa.tellez@nisd.net",
               Salutation: "Mrs. "
@@ -156,13 +158,13 @@ function processSelectedRows() {
               Email: "marcos.trevino@nisd.net",
               Salutation: "Mr. "
           },
+          Wine: {
+            Email: "stephanie.wine@nisd.net",
+            Salutation: "Mrs. "
+          },
           Yeager: {
               Email: "sheila.yeager@nisd.net",
               Salutation: "Mrs. "
-          },
-          "Zapata, J": {
-              Email: "juan.zapata01@nisd.net",
-              Salutation: "Mr. "
           }
             };
 
@@ -208,7 +210,7 @@ function processSelectedRows() {
   } catch(error) {
     MailApp.sendEmail({
       to: "alvaro.gomez@nisd.net",
-      subject: "Error occurred on the NAMS Student Referral Form",
+      subject: "Error occurred on the 2024-2025 NAMS Student Referral Form",
       htmlBody: "An error occurred: " + error.message
       });
 
