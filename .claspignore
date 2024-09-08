@@ -1,3 +1,6 @@
-#Ignore Git and Clasp files
-.git
-.clasp.json
+# Ignore everything by default
+**/*
+
+# Allow the main script files
+!Code.js
+!appsscript.json
