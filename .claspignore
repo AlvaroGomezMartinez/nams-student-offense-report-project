@@ -1,0 +1,3 @@
+#Ignore Git and Clasp files
+.git
+.clasp.json
