@@ -22,9 +22,9 @@
  *  Mobile: 210-363-1577                                                                                   *
  *                                                                                                         *
  * Latest Update:                                                                                          *
- *  09/08/24 - Updated the main comments text box, ran Prettier to make the script more readable.          *
+ *  05/23/24 - Handled an error caused when the value in row[17], column R is not a string.                *
  *                                                                                                         *
- ***********************************************************************************************************/
+***********************************************************************************************************/
 
 var rows = SpreadsheetApp.getActiveSheet().getDataRange().getValues();
 var headers = rows.shift();
@@ -41,7 +41,7 @@ function wrapText() {
  * Adds a user interface to the spreadsheet that gives the administrator    *
  * the option to send emails to the teachers. When the checkbox is checked, *
  * it will run the processSelectedRows function.                            *
- ****************************************************************************/
+****************************************************************************/
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
   ui.createMenu("Teacher Followup Emails")
@@ -63,13 +63,16 @@ function onOpen() {
  *  const "User" with the email data.                                      *
  * If checked and has a date, then it skips the row.                       *
  * If not checked and no date, then it skips the row.                      *
- ***************************************************************************/
+***************************************************************************/
 function processSelectedRows() {
+  let currentRowIndex = -1; // Initialize variable to track the row where an error occurred
+
   try {
     rows.forEach(function (row, i) {
+      currentRowIndex = i + 2; // +2 accounts for header and 0-indexing
       if (
         row[16] === true &&
-        (row[17] ? row[17].trim() === "" : true) &&
+        (row[17] ? String(row[17]).trim() === "" : true) &&
         row[5] != ""
       ) {
         const user = {
@@ -209,14 +212,14 @@ function processSelectedRows() {
         var referralDate = Utilities.formatDate(
           rawReferralDate,
           SpreadsheetApp.getActive().getSpreadsheetTimeZone(),
-          "MMM d, yyyy",
+          "MMM d, yyyy"
         );
         var subject = "NAMS Adminstrator Followup: Student Offense Report";
         var message = `${teacherTitle} ${teacherName},\n\nThis is a follow-up to the office referral you submitted for: ${studentName} (${studentId}) on ${referralDate}.\n\nThe student was seen by ${adminTitle} ${adminName}, and the following action was taken:\n${adminFollowUp}\n\nThis email is provided for your records.\n\nSincerely,\nNAMS Admin`;
 
         MailApp.sendEmail(to, subject, message);
 
-        if (row[17] ? row[17].trim() === "" : true) {
+        if (row[17] ? String(row[17]).trim() === "" : true) {
           var emailSent = [];
           emailSent.push("R" + (i + 2));
 
@@ -224,7 +227,7 @@ function processSelectedRows() {
           var correctedDate = Utilities.formatDate(
             new Date(),
             "GMT" + timezonOffset,
-            "MMM d, ''yy h:mm a",
+            "MMM d, ''yy h:mm a"
           );
 
           SpreadsheetApp.getActiveSheet()
@@ -238,14 +241,18 @@ function processSelectedRows() {
     MailApp.sendEmail({
       to: "alvaro.gomez@nisd.net",
       subject: "Error occurred on the 2024-2025 NAMS Student Referral Form",
-      htmlBody: "An error occurred: " + error.message,
+      htmlBody:
+        "An error occurred on row " +
+        currentRowIndex +
+        ": " +
+        error.message,
     });
 
     var ui = SpreadsheetApp.getUi();
     ui.alert(
-      "An error occurred while sending. Al was notified automatically right now to troubleshoot the error. You can check the last column to see which emails went out to teachers. If the cell doesn't have a date & time, the email didn't go out to that particular teacher. This is the error that Al will look at. You can click \"OK\" below to close this message.",
+      "An error occurred while sending. Al was notified automatically right now to troubleshoot the error. You can check the last column to see which emails went out to teachers. If the cell doesn't have a date & time, the email didn't go out to that particular teacher. This is the error that Al will look at. You can click \"OK\" below to close this message."
     );
 
-    Logger.log("An error occurred: " + error.message);
+    Logger.log("An error occurred on row " + currentRowIndex + ": " + error.message);
   }
 }
